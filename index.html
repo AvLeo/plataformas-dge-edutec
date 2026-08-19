@@ -9,7 +9,12 @@
 </head>
 
 <body>
-
+    <!-- Background Tech Watermarks -->
+    <div class="tech-watermark watermark-laptop"></div>
+    <div class="tech-watermark watermark-signal"></div>
+    <div class="tech-watermark watermark-cloud"></div>
+    <div class="tech-watermark watermark-code"></div>
+    <div class="tech-watermark watermark-backpack"></div>
 
     <!-- Hero Institucional -->
     <header class="hero">
@@ -56,6 +61,7 @@
         <section class="section-panel">
             <div class="edutec-node node-orange"></div>
             <div class="edutec-node node-pink"></div>
+            <div class="watermark-tech-1"></div>
             <h2 class="section-title">ACCESO PRINCIPAL</h2>
             <div class="cards-grid">
 
@@ -101,12 +107,12 @@
             <div class="edutec-node node-purple"></div>
             <div class="edutec-node node-blue"></div>
             <div class="edutec-node node-green"></div>
+            <div class="watermark-tech-2"></div>
             <h2 class="section-title">PLATAFORMAS EDUCATIVAS INTEGRADAS</h2>
-            <p class="section-note">* Solo para escuelas dentro del programa</p>
             <div class="cards-grid">
 
                 <!-- Matific -->
-                <a href="https://www.matific.com/ar/es-ar/home/" class="card card-matific" target="_blank"
+                <a href="https://www.matific.com/ar/es-ar/login-page/" class="card card-matific" target="_blank"
                     rel="noopener noreferrer">
                     <div class="card-badge">Matemática</div>
                     <img src="img/matific.png" alt="Matific" class="card-logo"
@@ -118,7 +124,7 @@
                 </a>
 
                 <!-- Eduten -->
-                <a href="https://eduten.com/" class="card card-eduten" target="_blank" rel="noopener noreferrer">
+                <a href="https://login.eduten.com/realms/eduten/protocol/openid-connect/auth?client_id=eduten&redirect_uri=https%3A%2F%2Flogin.eduten.com%2F&state=a633f2aa-42b1-4dd1-82a2-d4275139508e&response_mode=fragment&response_type=code&scope=openid&nonce=db1b4401-49fa-4d05-a432-d5565cb1ae72&code_challenge=xNGatEXE25fvUqX7x_wT2sR5sm36sF074PMlbFtfDeo&code_challenge_method=S256" class="card card-eduten" target="_blank" rel="noopener noreferrer">
                     <div class="card-badge">Práctica guiada</div>
                     <img src="img/eduten.png" alt="Eduten" class="card-logo" onerror="this.src=''; this.alt='Eduten';">
                     <h3>Eduten</h3>
@@ -128,7 +134,7 @@
                 </a>
 
                 <!-- FlexFlix -->
-                <a href="https://www.flexflix.ai/" class="card card-flexflix" target="_blank" rel="noopener noreferrer">
+                <a href="https://mendozaaumentada.ai/" class="card card-flexflix" target="_blank" rel="noopener noreferrer">
                     <div class="card-badge">Mendoza Aumentada</div>
                     <img src="img/flexflix.png" alt="FlexFlix" class="card-logo"
                         onerror="this.src=''; this.alt='FlexFlix';">
@@ -160,27 +166,32 @@
                 </svg>
             </button>
             <div class="modal-header">
-                <h3 id="modalTitle">Seleccionar Aula Virtual</h3>
+                <h3 id="modalTitle">Seleccionar Aula EDUTEC</h3>
                 <p>Elegí el aula correspondiente según la modalidad.</p>
             </div>
             <div class="modal-body">
-                <a href="https://aulasedutec1.mendoza.edu.ar/" class="modal-link" target="_blank"
+                <a href="https://escueladigital1.mendoza.edu.ar/" class="modal-link" target="_blank"
                     rel="noopener noreferrer">Aula 1</a>
                 <a href="https://aulasedutec2.mendoza.edu.ar/" class="modal-link" target="_blank"
                     rel="noopener noreferrer">Aula 2</a>
-                <a href="https://aulasedutec3.mendoza.edu.ar/" class="modal-link" target="_blank"
+                <a href="https://escueladigital3.mendoza.edu.ar/" class="modal-link" target="_blank"
                     rel="noopener noreferrer">Aula 3</a>
-                <a href="https://aulasedutec4.mendoza.edu.ar/" class="modal-link" target="_blank"
+                <a href="https://escueladigital4.mendoza.edu.ar/" class="modal-link" target="_blank"
                     rel="noopener noreferrer">Aula 4</a>
             </div>
-            <div class="modal-support">
-                <span class="support-dot"></span>
-                <h4>SOPORTE TÉCNICO</h4>
-                <p>Ante cualquier duda técnica</p>
-                <a href="mailto:ayudaaulasedutec@mendoza.edu.ar" class="support-link">ayudaaulasedutec@mendoza.edu.ar</a>
+            <div class="modal-help-section" style="margin: 0 32px 32px 32px; border: 1px solid #ffb266; border-radius: 12px; padding: 24px 20px; text-align: center; background-color: #fff; position: relative; z-index: 2;">
+                <h4 style="color: var(--dge-blue); font-size: 1.15rem; margin: 0 0 16px 0;">Gestión de Usuario</h4>
+                <a href="https://mdaescdigital.page.gd/rest_pass2.html?i=1" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #faa452; color: #fff; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 0 #6eb5db; margin-bottom: 24px; font-size: 0.95rem;">¿OLVIDASTE TU CONTRASEÑA?</a>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">Mesa de Ayuda:<br><strong style="color: var(--text-primary); font-size: 1.05rem;">ayudaaulasedutec@mendoza.edu.ar</strong></p>
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
+    <!-- Custom Cursor & Spotlight Effect -->
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-outline" id="cursorOutline"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
 
     <script src="js/app.js"></script>
 </body>
