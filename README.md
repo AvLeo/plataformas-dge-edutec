@@ -67,7 +67,20 @@ Busca la etiqueta `<a>` de la plataforma deseada.
 <a href="https://NUEVA-URL-DE-CUMBRE.com/" class="card card-cumbre" target="_blank" rel="noopener noreferrer">
 ```
 
-### 2. Cómo agregar nuevas plataformas
+### 2. Modificar Ayuda y Contraseña (Gestión de Usuario)
+
+Si necesitas actualizar el correo de la Mesa de Ayuda o el enlace de recuperación de contraseña que aparece dentro del modal de Aulas EDUTEC, busca el siguiente fragmento al final del archivo `index.html`:
+
+```html
+<!-- Enlace de contraseña -->
+<a href="https://mdaescdigital.page.gd/rest_pass2.html?i=1" ... >¿OLVIDASTE TU CONTRASEÑA?</a>
+
+<!-- Correo de mesa de ayuda -->
+<strong>ayudaaulasedutec@mendoza.edu.ar</strong>
+```
+Solo reemplaza la URL del atributo `href` o el texto del correo electrónico y guarda los cambios.
+
+### 3. Cómo agregar nuevas plataformas
 
 Si la DGE incorpora una nueva herramienta y necesitas agregar una tarjeta, sigue estos pasos:
 
