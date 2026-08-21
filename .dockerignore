@@ -1,0 +1,10 @@
+# Todo lo que no forma parte del sitio publicado
+.git
+.gitignore
+.github
+*.md
+process.ps1
+original_chatgpt.html
+Dockerfile
+.dockerignore
+docker-compose.yml
