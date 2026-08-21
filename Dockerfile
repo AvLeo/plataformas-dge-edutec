@@ -1,5 +1,5 @@
 # Landing DGE | EDUTEC — sitio 100% estatico, no requiere build step.
-# Se sirve con nginx sobre Alpine (imagen final ~50 MB).
+# Se sirve con nginx sobre Alpine (imagen final ~77 MB: 74.5 de base + 1.8 del sitio).
 FROM nginx:1.27-alpine
 
 # Configuracion propia: gzip, cache, cabeceras de seguridad y /health.
