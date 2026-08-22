@@ -25,6 +25,30 @@ El proyecto está construido 100% con tecnologías estáticas, sin dependencias 
 
 ---
 
+## 🐳 Cómo desplegar en Dokploy
+
+El repo incluye `Dockerfile`, `nginx/default.conf.template` y `docker-compose.yml` para
+desplegar la landing en un servidor propio con [Dokploy](https://dokploy.com/).
+
+Resumen: **Create Service → Application**, conectar este repo, build type
+**Dockerfile**, y en **Domains** publicar el dominio con **Container Port `80`**.
+
+Para servirlo bajo un subpath (ej. `edutecmza.com/plataformas-dge`), definí la
+variable de entorno `BASE_PATH=/plataformas-dge` y dejá **Strip Path**
+desactivado.
+
+👉 Pasos detallados, opciones alternativas y diagnóstico en **[DEPLOY.md](DEPLOY.md)**.
+
+Prueba local:
+
+```bash
+docker build -t edutec-landing .
+docker run --rm -p 8080:80 edutec-landing   # http://localhost:8080
+docker run --rm -p 8080:80 -e BASE_PATH=/plataformas-dge edutec-landing
+```
+
+---
+
 ## 🚀 Cómo subir este proyecto a GitHub Pages
 
 GitHub Pages te permite alojar sitios web estáticos de forma gratuita directamente desde un repositorio de GitHub.

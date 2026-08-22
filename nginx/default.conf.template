@@ -1,0 +1,88 @@
+# Configuracion de nginx para la landing DGE | EDUTEC (sitio estatico).
+#
+# BASE_PATH controla bajo que ruta se publica el sitio:
+#   BASE_PATH=""                  -> https://dominio/
+#   BASE_PATH="/plataformas-dge"  -> https://dominio/plataformas-dge/
+# Se sustituye al arrancar el contenedor (envsubst sobre este template).
+
+# Cache segun el tipo de contenido, no segun la ruta: asi funciona igual
+# en la raiz y bajo un subpath.
+map $sent_http_content_type $edutec_expires {
+    default                   off;
+    ~*text/html               epoch;   # no-cache: los deploys se ven al instante
+    ~*text/css                7d;
+    ~*application/javascript  7d;
+    ~*image/                  30d;
+    ~*font/                   30d;
+}
+
+server {
+    # Solo IPv4: en hosts Docker sin IPv6 un `listen [::]:80` hace que
+    # nginx aborte al arrancar. Traefik/Dokploy llega por la red interna IPv4.
+    listen      80;
+    server_name _;
+
+    # Root vacio a proposito: el contenido real se sirve con `alias` dentro
+    # del location de BASE_PATH. Asi, con un prefijo configurado, las rutas
+    # fuera de el devuelven 404 en vez de servir el sitio duplicado.
+    root  /usr/share/nginx/empty;
+    index index.html;
+
+    # UTF-8 explicito: el sitio esta en espanol (acentos y enies).
+    charset       utf-8;
+    charset_types text/css text/html text/plain text/xml
+                  application/javascript application/json image/svg+xml;
+
+    # --- Compresion ---
+    gzip              on;
+    gzip_vary         on;
+    gzip_comp_level   6;
+    gzip_min_length   256;
+    gzip_proxied      any;
+    gzip_types        text/plain text/css text/javascript
+                      application/javascript application/json
+                      image/svg+xml application/xml;
+
+    # --- Cabeceras de seguridad ---
+    add_header X-Content-Type-Options   "nosniff"                         always;
+    add_header X-Frame-Options          "SAMEORIGIN"                      always;
+    add_header Referrer-Policy          "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy       "geolocation=(), microphone=(), camera=()" always;
+
+    expires $edutec_expires;
+
+    server_tokens off;
+
+    # Location relativo en los redirects. Sin esto nginx arma una URL
+    # absoluta con esquema http:// (no sabe que Traefik termina el TLS)
+    # y el 301 degradaria de HTTPS a HTTP.
+    absolute_redirect off;
+
+    # Redirige /base -> /base/ (301).
+    # Imprescindible con BASE_PATH: index.html usa rutas relativas
+    # (css/style.css), asi que sin la barra final el navegador las resolveria
+    # contra la raiz del dominio y la pagina saldria sin estilos.
+    # Con BASE_PATH vacio la condicion nunca se cumple ($uri siempre empieza con /).
+    if ($uri = "${BASE_PATH}") {
+        return 301 ${BASE_PATH}/$is_args$args;
+    }
+
+    # --- Health check (lo usa el HEALTHCHECK del contenedor, por 127.0.0.1) ---
+    # Queda siempre en la raiz, no depende de BASE_PATH.
+    location = /health {
+        access_log   off;
+        default_type text/plain;
+        return 200   "ok\n";
+    }
+
+    # --- Contenido ---
+    location ${BASE_PATH}/ {
+        alias /usr/share/nginx/html/;
+        index index.html;
+    }
+
+    # Bloquea archivos ocultos (.git, .env, etc.) por si alguno se cuela.
+    location ~ /\. {
+        deny all;
+    }
+}
