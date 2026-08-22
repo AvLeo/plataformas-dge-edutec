@@ -33,9 +33,13 @@ desplegar la landing en un servidor propio con [Dokploy](https://dokploy.com/).
 Resumen: **Create Service → Application**, conectar este repo, build type
 **Dockerfile**, y en **Domains** publicar el dominio con **Container Port `80`**.
 
-Para servirlo bajo un subpath (ej. `edutecmza.com/plataformas-dge`), definí la
-variable de entorno `BASE_PATH=/plataformas-dge` y dejá **Strip Path**
-desactivado.
+Lo más simple es darle un **subdominio propio** (ej. `plataformas.edutecmza.com`):
+record `A` apuntando al servidor, **Path** `/` y sin variables de entorno.
+
+También se puede publicar bajo un subpath del dominio
+(`edutecmza.com/plataformas-dge`) definiendo `BASE_PATH=/plataformas-dge` y
+dejando **Strip Path** desactivado, pero si el dominio ya tiene otra app puede
+haber conflicto de routers en Traefik.
 
 👉 Pasos detallados, opciones alternativas y diagnóstico en **[DEPLOY.md](DEPLOY.md)**.
 

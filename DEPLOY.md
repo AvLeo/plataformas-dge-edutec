@@ -44,54 +44,74 @@ En la pestaña **Build Type**:
 - **Docker Context Path:** `.` (o vacío)
 
 La única variable de entorno es **`BASE_PATH`**, y solo si publicás el sitio
-bajo un subpath (ver 5b). En la raíz del dominio no hace falta definirla.
+bajo un subpath (ver 5b). Con un subdominio no hace falta definirla.
 
 ### 4. Desplegar
 
 Botón **Deploy**. El primer build tarda ~1 minuto (baja la imagen de nginx y
 copia los archivos). Los siguientes son casi instantáneos por la cache de capas.
 
-### 5. Publicar el dominio
+### 5. Publicar el dominio (subdominio — recomendado)
 
-En la pestaña **Domains → Add Domain**. Los campos y qué poner en cada uno:
+Lo más simple y robusto es darle un subdominio propio, por ejemplo
+`plataformas.edutecmza.com`.
 
-| Campo | En la raíz del dominio | Bajo un subpath |
+**Primero el DNS.** En el panel del dominio, creá un registro:
+
+| Tipo | Nombre | Valor |
 |---|---|---|
-| **Host** | `edutecmza.com` | `edutecmza.com` |
-| **Path** | `/` | `/plataformas-dge` |
-| **Strip Path** | desactivado | **desactivado** |
-| **Internal Path** | vacío | vacío |
-| **Container Port** | `80` | `80` |
-| **HTTPS** | activado | activado |
-| **Certificate** | `Let's Encrypt` | `Let's Encrypt` |
+| `A` | `plataformas` | IP del servidor de Dokploy |
 
-**Host** es solo el hostname: sin `https://`, sin barra final y sin path.
+Esperá a que resuelva antes de seguir (`nslookup plataformas.edutecmza.com`).
+Si todavía no resuelve, Let's Encrypt no puede emitir el certificado.
 
-**Container Port** es el puerto *dentro* del contenedor, no el del servidor ni
-el 443. Si no es `80`, Traefik responde 502.
+**Después, en Dokploy: Domains → Add Domain.**
 
-**Strip Path** quita el prefijo antes de reenviar al contenedor, e **Internal
-Path** hace lo contrario (se lo antepone). Acá no se usa ninguno de los dos:
-del prefijo se encarga nginx mediante `BASE_PATH` (ver abajo).
+| Campo | Valor |
+|---|---|
+| **Host** | `plataformas.edutecmza.com` |
+| **Path** | `/` |
+| **Strip Path** | desactivado |
+| **Internal Path** | vacío |
+| **Container Port** | `80` |
+| **HTTPS** | activado |
+| **Certificate** | `Let's Encrypt` |
 
-> Antes de generar el certificado, el dominio tiene que apuntar por DNS
-> (registro `A`) a la IP del servidor de Dokploy. Si no resuelve todavía,
-> Let's Encrypt falla y hay que reintentar desde el mismo panel.
+**Y en la pestaña Environment: `BASE_PATH` tiene que estar vacío o no existir.**
+Si quedó definido de una prueba con subpath, el sitio responde 403 en la raíz
+del subdominio. Es el error más fácil de cometer al pasar de subpath a
+subdominio.
 
-Para una prueba rápida sin dominio propio, Dokploy ofrece un host `traefik.me`
-que resuelve solo a la IP del servidor.
+Notas sobre los campos:
 
-### 5b. Publicar bajo un subpath (ej. `edutecmza.com/plataformas-dge`)
+- **Host** es solo el hostname: sin `https://`, sin barra final y sin path.
+- **Container Port** es el puerto *dentro* del contenedor, no el del servidor
+  ni el 443. Si no es `80`, Traefik responde 502.
+- **Strip Path** quita el prefijo antes de reenviar al contenedor, e **Internal
+  Path** hace lo contrario (se lo antepone). Con un subdominio no se usa
+  ninguno de los dos.
 
-Además del **Path** de la tabla de arriba, hay que declarar la variable de
-entorno en la pestaña **Environment** del servicio:
+Para una prueba rápida sin tocar DNS, Dokploy ofrece un host `traefik.me` que
+resuelve solo a la IP del servidor.
+
+### 5b. Alternativa: subpath (`edutecmza.com/plataformas-dge`)
+
+> **Ojo si el dominio ya tiene otra app.** Si esa app publica un router en
+> `edutecmza.com` con `Path /`, puede quedarse con el tráfico antes que la
+> regla más específica del subpath, y vas a ver el 404 de la *otra* app.
+> Resolverlo implica tocar prioridades de router en Traefik. **Si podés,
+> usá un subdominio.**
+
+Campos del dominio: igual que arriba pero con **Host** `edutecmza.com`,
+**Path** `/plataformas-dge` y **Strip Path desactivado**.
+
+Además hay que declarar la variable de entorno en **Environment**:
 
 ```
 BASE_PATH=/plataformas-dge
 ```
 
-Con barra inicial y **sin** barra final. Dejala vacía (o no la definas) para
-servir en la raíz del dominio.
+Con barra inicial y **sin** barra final.
 
 #### Por qué hace falta, y por qué Strip Path va desactivado
 
@@ -111,7 +131,7 @@ Verificado sobre el contenedor real, en los dos modos:
 
 | URL | Resultado |
 |---|---|
-| `/` (BASE_PATH vacío) | 200, CSS e imágenes OK |
+| `/` (sin `BASE_PATH`) | 200, CSS e imágenes OK |
 | `/plataformas-dge/` | 200, CSS e imágenes OK |
 | `/plataformas-dge` | 301 → `/plataformas-dge/`, luego 200 |
 
@@ -177,7 +197,9 @@ docker run --rm -p 8080:80 -e BASE_PATH=/plataformas-dge edutec-landing
 | 502 Bad Gateway desde Traefik | El **Container Port** del dominio no es `80`. |
 | El certificado no se emite | El DNS del dominio todavía no apunta al servidor. |
 | Se ve la versión vieja tras un deploy | Cache del navegador: `Ctrl+F5`. El HTML se sirve `no-cache`, pero CSS/JS tienen 7 días. |
-| La página carga sin estilos ni imágenes | Falta `BASE_PATH`, o **Strip Path** quedó activado. Ver 5b. |
+| La página carga sin estilos ni imágenes | En subpath: falta `BASE_PATH`, o **Strip Path** quedó activado. Ver 5b. |
+| 403 en la raíz del (sub)dominio | Quedó `BASE_PATH` definido de una prueba con subpath. Borralo de **Environment** y redesplegá. |
+| Cae en el 404 de otra app del mismo dominio | Otro router de Traefik se quedó con el host. Usá un subdominio (ver 5). |
 | El contenedor reinicia en loop | Ver **Logs** en Dokploy; `nginx -t` corre en el arranque. |
 
 ## Actualizar la versión de nginx
