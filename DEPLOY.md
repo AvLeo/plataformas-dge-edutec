@@ -135,6 +135,46 @@ Verificado sobre el contenedor real, en los dos modos:
 | `/plataformas-dge/` | 200, CSS e imágenes OK |
 | `/plataformas-dge` | 301 → `/plataformas-dge/`, luego 200 |
 
+### 5c. Si el dominio está detrás de Cloudflare
+
+Se detecta mirando las cabeceras de la respuesta: si aparecen `server: cloudflare`
+y `cf-ray`, el tráfico pasa por Cloudflare antes de llegar al servidor.
+
+**Mientras configurás, poné el registro en "DNS only" (nube gris).** Quita una
+capa del medio, deja que Let's Encrypt valide directo contra el servidor y evita
+el problema clásico del SSL mode **Flexible** (Cloudflare habla HTTP al origin,
+Traefik redirige a HTTPS y se arma un loop de redirects). Una vez que el sitio
+carga bien por HTTPS, se puede volver a activar el proxy con SSL/TLS mode en
+**Full (strict)**.
+
+**Con la nube naranja activada, el candado del navegador es el de Cloudflare**,
+no el de Let's Encrypt. Que el certificado se vea OK no prueba que Traefik haya
+emitido el suyo ni que el ruteo funcione: se puede tener certificado válido y
+404 al mismo tiempo.
+
+Para probar el origin salteando Cloudflare:
+
+```bash
+curl -skI --resolve tu.dominio.com:443:IP_DEL_SERVIDOR https://tu.dominio.com/
+```
+
+Si por ahí responde 200 pero por Cloudflare da 404, el registro DNS está
+apuntando a otro origin (o no existe y está resolviendo por un wildcard `*`).
+
+### 5d. De quién es el 404
+
+Distinguirlos ahorra tiempo, porque cada uno se arregla en un lugar distinto:
+
+| Respuesta | Quién contesta | Dónde mirar |
+|---|---|---|
+| `text/plain`, 19 bytes, `404 page not found` | **Traefik**: ningún router matchea el Host o el Path | Dokploy: que el servicio esté corriendo y el dominio bien cargado |
+| HTML con `server: nginx` | **El contenedor**: la ruta no existe puertas adentro | `BASE_PATH`, o la ruta pedida |
+| Página HTML con marca de Cloudflare | **Cloudflare**: no llegó al origin | DNS del registro |
+
+Ojo: con la nube naranja, Cloudflare reescribe la cabecera `server`. Un 404 de
+Traefik proxeado llega con `server: cloudflare` pero conserva el cuerpo de
+19 bytes en `text/plain` — el tamaño es la pista, no el `server`.
+
 ### 6. Auto-deploy en cada push (opcional)
 
 En la pestaña **Deployments** copiá la **Webhook URL** y pegala en GitHub:
@@ -200,6 +240,9 @@ docker run --rm -p 8080:80 -e BASE_PATH=/plataformas-dge edutec-landing
 | La página carga sin estilos ni imágenes | En subpath: falta `BASE_PATH`, o **Strip Path** quedó activado. Ver 5b. |
 | 403 en la raíz del (sub)dominio | Quedó `BASE_PATH` definido de una prueba con subpath. Borralo de **Environment** y redesplegá. |
 | Cae en el 404 de otra app del mismo dominio | Otro router de Traefik se quedó con el host. Usá un subdominio (ver 5). |
+| 404 de 19 bytes en `text/plain` | Es de Traefik: no hay router para ese host. Ver 5d. |
+| Certificado OK pero 404 | Si hay Cloudflare, el candado es suyo y no dice nada del origin. Ver 5c. |
+| Loop de redirects (`ERR_TOO_MANY_REDIRECTS`) | SSL mode de Cloudflare en *Flexible*. Pasalo a *Full (strict)*. Ver 5c. |
 | El contenedor reinicia en loop | Ver **Logs** en Dokploy; `nginx -t` corre en el arranque. |
 
 ## Actualizar la versión de nginx
